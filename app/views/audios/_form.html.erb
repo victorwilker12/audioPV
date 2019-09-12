@@ -21,10 +21,15 @@
     <%= form.text_field :author %>
   </div>
 
-  <div class="field">
-    <%= form.label :audio %>
-    <%= form.text_field :audio %>
-  </div>
+<!--  <div class="field">-->
+    <%#= form.label :audio %>
+    <%#= form.text_field :audio %>
+<!--  </div>-->
+  <div class="form-group">
+                <%#= f.input :images %>
+                <%= form.label "Painel Digital  (PDF) * ", class: 'label' %><br>
+                <%= form.file_field :audio, direct_upload: true, required: true,accept: "application/pdf" %>
+    </div>
 
   <div class="actions">
     <%= form.submit %>

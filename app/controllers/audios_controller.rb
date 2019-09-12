@@ -1,6 +1,6 @@
 class AudiosController < InheritedResources::Base
-
-  private
+ skip_before_action :verify_authenticity_token
+    private
 
     def audio_params
       params.require(:audio).permit(:name, :author, :audio)

@@ -12,98 +12,183 @@
 //
 //= require rails-ujs
 //= require activestorage
+
+//= require js/jquery-1.11.2.min
+//= require js/bootstrap-table
+
 //= require vendor/jquery/jquery.min
 //= require vendor/bootstrap/js/bootstrap.bundle.min
 //= require vendor/jquery-easing/jquery.easing.min
 //= require ./js/grayscale.min
+
+
+
 //= require turbolinks
 // require_tree .
 
 
-(function(){
+(function () {
 
-  var pcastPlayers = document.querySelectorAll('.pcast-player');
-  var speeds = [ 1, 1.5, 2, 2.5, 3 ]    
-  
-  for(i=0;i<pcastPlayers.length;i++) {
-    var player = pcastPlayers[i];
-    var audio = player.querySelector('audio');
-    var play = player.querySelector('.pcast-play');
-    var pause = player.querySelector('.pcast-pause');
-    var rewind = player.querySelector('.pcast-rewind');
-    var progress = player.querySelector('.pcast-progress');
-    var speed = player.querySelector('.pcast-speed');
-    var mute = player.querySelector('.pcast-mute');
-    var currentTime = player.querySelector('.pcast-currenttime');
-    var duration = player.querySelector('.pcast-duration');
-    
-    var currentSpeedIdx = 0;
+    var pcastPlayers = document.querySelectorAll('.pcast-player');
+    var speeds = [1, 1.5, 2, 2.5, 3]
 
-    pause.style.display = 'none';
-    
-    var toHHMMSS = function ( totalsecs ) {
-        var sec_num = parseInt(totalsecs, 10); // don't forget the second param
-        var hours   = Math.floor(sec_num / 3600);
-        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
-        var seconds = sec_num - (hours * 3600) - (minutes * 60);
+    for (i = 0; i < pcastPlayers.length; i++) {
+        var player = pcastPlayers[i];
+        var audio = player.querySelector('audio');
+        var play = player.querySelector('.pcast-play');
+        var pause = player.querySelector('.pcast-pause');
+        var rewind = player.querySelector('.pcast-rewind');
+        var progress = player.querySelector('.pcast-progress');
+        var speed = player.querySelector('.pcast-speed');
+        var mute = player.querySelector('.pcast-mute');
+        var currentTime = player.querySelector('.pcast-currenttime');
+        var duration = player.querySelector('.pcast-duration');
 
-        if (hours   < 10) {hours   = "0"+hours; }
-        if (minutes < 10) {minutes = "0"+minutes;}
-        if (seconds < 10) {seconds = "0"+seconds;}
-        
-        var time = hours+':'+minutes+':'+seconds;
-        return time;
+        var currentSpeedIdx = 0;
+
+        pause.style.display = 'none';
+
+        var toHHMMSS = function (totalsecs) {
+            var sec_num = parseInt(totalsecs, 10); // don't forget the second param
+            var hours = Math.floor(sec_num / 3600);
+            var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+            var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+            if (hours < 10) {
+                hours = "0" + hours;
+            }
+            if (minutes < 10) {
+                minutes = "0" + minutes;
+            }
+            if (seconds < 10) {
+                seconds = "0" + seconds;
+            }
+
+            var time = hours + ':' + minutes + ':' + seconds;
+            return time;
+        }
+
+        audio.addEventListener('loadedmetadata', function () {
+            progress.setAttribute('max', Math.floor(audio.duration));
+            duration.textContent = toHHMMSS(audio.duration);
+        });
+
+        audio.addEventListener('timeupdate', function () {
+            progress.setAttribute('value', audio.currentTime);
+            currentTime.textContent = toHHMMSS(audio.currentTime);
+        });
+
+        play.addEventListener('click', function () {
+            this.style.display = 'none';
+            pause.style.display = 'inline-block';
+            pause.focus();
+            audio.play();
+        }, false);
+
+        pause.addEventListener('click', function () {
+            this.style.display = 'none';
+            play.style.display = 'inline-block';
+            play.focus();
+            audio.pause();
+        }, false);
+
+        rewind.addEventListener('click', function () {
+            audio.currentTime -= 30;
+        }, false);
+
+        progress.addEventListener('click', function (e) {
+            audio.currentTime = Math.floor(audio.duration) * (e.offsetX / e.target.offsetWidth);
+        }, false);
+
+        speed.addEventListener('click', function () {
+            currentSpeedIdx = currentSpeedIdx + 1 < speeds.length ? currentSpeedIdx + 1 : 0;
+            audio.playbackRate = speeds[currentSpeedIdx];
+            this.textContent = speeds[currentSpeedIdx] + 'x';
+            return true;
+        }, false);
+
+        mute.addEventListener('click', function () {
+            if (audio.muted) {
+                audio.muted = false;
+                this.querySelector('.fa').classList.remove('fa-volume-off');
+                this.querySelector('.fa').classList.add('fa-volume-up');
+            } else {
+                audio.muted = true;
+                this.querySelector('.fa').classList.remove('fa-volume-up');
+                this.querySelector('.fa').classList.add('fa-volume-off');
+            }
+        }, false);
     }
-    
-    audio.addEventListener('loadedmetadata', function(){
-      progress.setAttribute('max', Math.floor(audio.duration));
-      duration.textContent  = toHHMMSS(audio.duration);
-    });
-    
-    audio.addEventListener('timeupdate', function(){
-      progress.setAttribute('value', audio.currentTime);
-      currentTime.textContent  = toHHMMSS(audio.currentTime);
-    });
-    
-    play.addEventListener('click', function(){
-      this.style.display = 'none';
-      pause.style.display = 'inline-block';
-      pause.focus();
-      audio.play();
-    }, false);
-
-    pause.addEventListener('click', function(){
-      this.style.display = 'none';
-      play.style.display = 'inline-block';
-      play.focus();
-      audio.pause();
-    }, false);
- 
-    rewind.addEventListener('click', function(){
-      audio.currentTime -= 30;
-    }, false);
-    
-    progress.addEventListener('click', function(e){
-      audio.currentTime = Math.floor(audio.duration) * (e.offsetX / e.target.offsetWidth);
-    }, false);
-
-    speed.addEventListener('click', function(){
-      currentSpeedIdx = currentSpeedIdx + 1 < speeds.length ? currentSpeedIdx + 1 : 0;
-      audio.playbackRate = speeds[currentSpeedIdx];
-      this.textContent  = speeds[currentSpeedIdx] + 'x';
-      return true;
-    }, false);
-
-    mute.addEventListener('click', function() {
-      if(audio.muted) {
-        audio.muted = false;
-        this.querySelector('.fa').classList.remove('fa-volume-off');
-        this.querySelector('.fa').classList.add('fa-volume-up');
-      } else {
-        audio.muted = true;
-        this.querySelector('.fa').classList.remove('fa-volume-up');
-        this.querySelector('.fa').classList.add('fa-volume-off');
-      }
-    }, false);
-  }
 })(this);
+
+
+
+//table 
+
+
+
+var $table = $('#fresh-table'),
+    $alertBtn = $('#alertBtn'),
+    full_screen = false;
+
+$().ready(function () {
+    $table.bootstrapTable({
+        toolbar: ".toolbar",
+
+        showRefresh: true,
+        search: true,
+        showToggle: true,
+        showColumns: true,
+        pagination: true,
+        striped: true,
+        pageSize: 8,
+        pageList: [8, 10, 25, 50, 100],
+
+        formatShowingRows: function (pageFrom, pageTo, totalRows) {
+            //do nothing here, we don't want to show the text "showing x of y from..."
+        },
+        formatRecordsPerPage: function (pageNumber) {
+            return pageNumber + " rows visible";
+        },
+        icons: {
+            refresh: 'fa fa-refresh',
+            toggle: 'fa fa-th-list',
+            columns: 'fa fa-columns',
+            detailOpen: 'fa fa-plus-circle',
+            detailClose: 'fa fa-minus-circle'
+        }
+    });
+
+
+
+    $(window).resize(function () {
+        $table.bootstrapTable('resetView');
+    });
+
+
+    window.operateEvents = {
+        'click .like': function (e, value, row, index) {
+            alert('You click like icon, row: ' + JSON.stringify(row));
+            console.log(value, row, index);
+        },
+        'click .edit': function (e, value, row, index) {
+            alert('You click edit icon, row: ' + JSON.stringify(row));
+            console.log(value, row, index);
+        },
+        'click .remove': function (e, value, row, index) {
+            $table.bootstrapTable('remove', {
+                field: 'id',
+                values: [row.id]
+            });
+
+        }
+    };
+
+//    $alertBtn.click(function () {
+//        alert("You pressed on Alert");
+//    });
+
+});
+
+
+
